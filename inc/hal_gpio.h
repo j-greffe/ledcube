@@ -4,22 +4,25 @@
 #include <msp430.h>
 #include <stdint.h>
 
-#define IO_PACK(_port,_pin) {.bf.port = ((_port)-1), .bf.pin = (_pin)}
+#define HAL_IO_PACK(_port,_pin) ((gpio_t){ .bf.port = ((_port)-1), .bf.pin = (_pin) })
 
-#define IO_OUT              (BIT0)
-#define IO_IN               (0)
+#define HAL_IO_OUT              (BIT0)
+#define HAL_IO_IN               (0)
 
-#define IO_SET              (BIT1)
-#define IO_CLR              (0)
+#define HAL_IO_SET              (BIT1)
+#define HAL_IO_CLR              (0)
 
-#define IO_ALT              (BIT2)
-#define IO_GPIO             (0)
+#define HAL_IO_ALT              (BIT2)
+#define HAL_IO_GPIO             (0)
 
-#define IO_PU               (BIT3)
-#define IO_PD               (BIT4)
-#define IO_NOP              (0)
+#define HAL_IO_PU               (BIT3)
+#define HAL_IO_PD               (BIT4)
+#define HAL_IO_NOP              (0)
 
-#define IO_NC               IO_OUT | IO_CLR
+#define HAL_IO_NC               HAL_IO_OUT | HAL_IO_CLR
+
+#define HAL_IO_NONE_BYTE        (0xFF)
+#define HAL_IO_NONE             ((gpio_t){ .byte = HAL_IO_NONE_BYTE })
 
 typedef union {
     struct {
@@ -29,11 +32,11 @@ typedef union {
     uint8_t byte;
 } gpio_t;
 
-void hal_gpio_set(gpio_t* io);
-void hal_gpio_clr(gpio_t* io);
-void hal_gpio_tog(gpio_t* io);
-uint8_t hal_gpio_get(gpio_t* io);
-uint8_t hal_gpio_get_port(gpio_t* io);
-void hal_gpio_cfg(gpio_t* io, uint8_t cfg);
+void hal_gpio_set(gpio_t io);
+void hal_gpio_clr(gpio_t io);
+void hal_gpio_tog(gpio_t io);
+uint8_t hal_gpio_get(gpio_t io);
+uint8_t hal_gpio_get_port(gpio_t io);
+void hal_gpio_cfg(gpio_t io, uint8_t cfg);
 
 #endif

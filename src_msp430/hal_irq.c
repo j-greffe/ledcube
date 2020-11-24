@@ -16,10 +16,12 @@ typedef struct
 #define HAL_IRQ_NB  (8*(sizeof(g_pies)/sizeof(uint8_t*)))
 static hal_irq_t g_hal_irq[HAL_IRQ_NB];
 
-void hal_irq_set(gpio_t* io, uint8_t edge, hal_isr_t action, void* param)
+void hal_irq_set(gpio_t io, uint8_t edge, hal_isr_t action, void* param)
 {
-	g_hal_irq[((io->bf.port)*8)+io->bf.pin].action = action;
-	g_hal_irq[((io->bf.port)*8)+io->bf.pin].param = param;
+    if (HAL_IO_NONE_BYTE == io.byte) return;
+
+	g_hal_irq[((io.bf.port)*8)+io.bf.pin].action = action;
+	g_hal_irq[((io.bf.port)*8)+io.bf.pin].param = param;
 
 	// disable irq
 	hal_irq_dis(io);
@@ -27,40 +29,52 @@ void hal_irq_set(gpio_t* io, uint8_t edge, hal_isr_t action, void* param)
 	hal_irq_clr_port(io);
 
 	// Clear register
-	*(g_pies[io->bf.port]) &= (uint8_t)(~(1 << io->bf.pin));
+	*(g_pies[io.bf.port]) &= (uint8_t)(~(1 << io.bf.pin));
 	// Select edge
-	*(g_pies[io->bf.port]) |= (uint8_t)(edge << io->bf.pin);
+	*(g_pies[io.bf.port]) |= (uint8_t)(edge << io.bf.pin);
 }
 
-void hal_irq_en(gpio_t* io)
+void hal_irq_en(gpio_t io)
 {
+    if (HAL_IO_NONE_BYTE == io.byte) return;
+
 	hal_irq_clr_port(io);
-	*(g_pie[io->bf.port]) |= (uint8_t)(1 << io->bf.pin);
+	*(g_pie[io.bf.port]) |= (uint8_t)(1 << io.bf.pin);
 }
 
-void hal_irq_dis(gpio_t* io)
+void hal_irq_dis(gpio_t io)
 {
-	*(g_pie[io->bf.port]) &= (uint8_t)(~(1 << io->bf.pin));
+    if (HAL_IO_NONE_BYTE == io.byte) return;
+
+	*(g_pie[io.bf.port]) &= (uint8_t)(~(1 << io.bf.pin));
 }
 
-uint8_t hal_irq_get(gpio_t* io)
+uint8_t hal_irq_get(gpio_t io)
 {
-	return (*(g_pifg[io->bf.port]) & (uint8_t)(1 << io->bf.pin));
+    if (HAL_IO_NONE_BYTE == io.byte) return 0;
+
+	return (*(g_pifg[io.bf.port]) & (uint8_t)(1 << io.bf.pin));
 }
 
-uint8_t hal_irq_get_port(gpio_t* io)
+uint8_t hal_irq_get_port(gpio_t io)
 {
-	return (*(g_pifg[io->bf.port]));
+    if (HAL_IO_NONE_BYTE == io.byte) return 0;
+
+	return (*(g_pifg[io.bf.port]));
 }
 
-void hal_irq_clr(gpio_t* io)
+void hal_irq_clr(gpio_t io)
 {
-	*(g_pifg[io->bf.port]) &= (uint8_t)(~(1 << io->bf.pin));
+    if (HAL_IO_NONE_BYTE == io.byte) return;
+
+	*(g_pifg[io.bf.port]) &= (uint8_t)(~(1 << io.bf.pin));
 }
 
-void hal_irq_clr_port(gpio_t* io)
+void hal_irq_clr_port(gpio_t io)
 {
-	*(g_pifg[io->bf.port]) = 0x00;
+    if (HAL_IO_NONE_BYTE == io.byte) return;
+
+	*(g_pifg[io.bf.port]) = 0x00;
 }
 
 
@@ -68,7 +82,7 @@ void hal_irq_clr_port(gpio_t* io)
 __interrupt void Port1_isr(void)
 {
 	uint8_t i;
-	gpio_t io = IO_PACK(1,0);
+	gpio_t io = HAL_IO_PACK(1,0);
 
 	hal_lpm_exit();
 
@@ -76,7 +90,7 @@ __interrupt void Port1_isr(void)
 	for (i = 8; i > 0; i--)
 	{
 	    io.bf.pin = i-1;
-		if (hal_irq_get(&io))
+		if (hal_irq_get(io))
 		{
 			// do action
 		    if (g_hal_irq[i-1].action)
@@ -86,14 +100,14 @@ __interrupt void Port1_isr(void)
 		}
 	}
 	// clear flags
-	hal_irq_clr_port(&io);
+	hal_irq_clr_port(io);
 }
 
 #pragma vector=PORT2_VECTOR
 __interrupt void Port2_isr(void)
 {
 	uint8_t i;
-	gpio_t io = IO_PACK(2,0);
+	gpio_t io = HAL_IO_PACK(2,0);
 
     hal_lpm_exit();
 
@@ -101,7 +115,7 @@ __interrupt void Port2_isr(void)
     for (i = 8; i > 0; i--)
     {
         io.bf.pin = i-1;
-        if (hal_irq_get(&io))
+        if (hal_irq_get(io))
         {
             // do action
             if (g_hal_irq[i+7].action)
@@ -111,5 +125,5 @@ __interrupt void Port2_isr(void)
         }
     }
 	// clear flags
-	hal_irq_clr_port(&io);
+	hal_irq_clr_port(io);
 }
