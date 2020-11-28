@@ -1,4 +1,5 @@
 #include <msp430.h>
+#include "hal_clk_p.h"
 #include "hal_timer.h"
 
 #ifdef __MSP430_HAS_TA3__
@@ -14,12 +15,7 @@ static hal_timer_t g_timer[TIMER_NB];
 void hal_timer_A0_open(void)
 {
     // ACKL / 8
-    BCSCTL1 &= ~(DIVA0 | DIVA1);
-    BCSCTL1 = (DIVA_3);
-
-    // Xcap 12.5pF
-    BCSCTL3 &= ~(XCAP0 | XCAP1);
-    BCSCTL3 |= (XCAP_2);
+    hal_clk_set(HAL_CLK_ACLK, HAL_CLK_BASE_ACLK/8);
 
     // Wait for fault bit to clear
     while (BCSCTL3 & LFXT1OF);
@@ -62,9 +58,9 @@ __interrupt void Timer_A0(void)
 
     hal_lpm_exit();
 
-	// disable interrupt on timer
     if (HAL_TIMER_CONTINOUS != g_timer[idx].mode)
     {
+        // Disable interrupt on timer
         *(g_tacctl[idx]) = 0;
     }
     else
@@ -90,9 +86,9 @@ __interrupt void Timer_A1(void)
 
     hal_lpm_exit();
 
-    // disable interrupt on timer
     if (HAL_TIMER_CONTINOUS != g_timer[idx].mode)
     {
+        // Disable interrupt on timer
         *(g_tacctl[idx]) = 0;
     }
     else

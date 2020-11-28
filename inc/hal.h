@@ -4,6 +4,7 @@
 typedef void(*hal_isr_t)(void*);
 
 #include "hal_adc.h"
+#include "hal_clk.h"
 #include "hal_gpio.h"
 #include "hal_irq.h"
 #include "hal_lpm.h"
