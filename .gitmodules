@@ -1,0 +1,9 @@
+[submodule "hal"]
+	path = Software/hal
+	url = git@github.com:j-greffe/hal.git
+[submodule "kal"]
+	path = Software/kal
+	url = git@github.com:j-greffe/kal.git
+[submodule "drivers"]
+	path = Software/drivers
+	url = git@github.com:j-greffe/drivers.git
