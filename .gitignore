@@ -1,0 +1,7 @@
+# Eagle
+*.s#*
+*.b#*
+
+# Code Composer Studio
+Debug
+
